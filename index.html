@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>PASTORAL DO DÍZIMO | PS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<style>
+body{font-family:Arial;background:#f4f6f8;padding:16px}
+.card{background:#fff;padding:14px;border-radius:10px;margin-bottom:12px}
+input,select,button{width:100%;height:42px;margin-top:6px}
+button{background:#2e7d32;color:#fff;border:none;border-radius:6px}
+.hidden{display:none}
+</style>
+</head>
+
+<body>
+
+<h2 style="text-align:center">PASTORAL DO DÍZIMO | PS</h2>
+
+<div class="card" id="login">
+  <h3>Login</h3>
+  <input id="email" placeholder="E-mail">
+  <input id="password" type="password" placeholder="Senha">
+  <button onclick="login()">Entrar</button>
+</div>
+
+<div id="app" class="hidden">
+
+<div class="card">
+  <h3>Novo dizimista</h3>
+  <input id="nome">
+  <button onclick="addDizimista()">Adicionar</button>
+</div>
+
+<div class="card">
+  <h3>Nova contribuição</h3>
+  <select id="dizimista"></select>
+  <select id="mes">
+    <option>Janeiro</option><option>Fevereiro</option><option>Março</option>
+    <option>Abril</option><option>Maio</option><option>Junho</option>
+    <option>Julho</option><option>Agosto</option><option>Setembro</option>
+    <option>Outubro</option><option>Novembro</option><option>Dezembro</option>
+  </select>
+  <input id="valor" type="number" placeholder="Valor">
+  <button onclick="addContribuicao()">Salvar</button>
+</div>
+
+<div class="card" id="lista"></div>
+
+<button onclick="logout()">Sair</button>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDA__87qdAwIIaeZ6SIxXzJLlf7iEekc98",
+  authDomain: "dizimosps-6deef.firebaseapp.com",
+  projectId: "Cdizimosps-6deef"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+function login(){
+  auth.signInWithEmailAndPassword(
+    email.value, password.value
+  );
+}
+
+auth.onAuthStateChanged(user=>{
+  if(user){
+    login.classList.add("hidden");
+    app.classList.remove("hidden");
+    carregar();
+  }
+});
+
+function logout(){
+  auth.signOut();
+}
+
+function addDizimista(){
+  db.collection("dizimistas").add({nome:nome.value});
+  nome.value="";
+  carregar();
+}
+
+function addContribuicao(){
+  db.collection("contribuicoes").add({
+    nome:dizimista.value,
+    mes:mes.value,
+    valor:valor.value,
+    data:new Date().toLocaleDateString("pt-BR")
+  });
+  valor.value="";
+  carregar();
+}
+
+async function carregar(){
+  lista.innerHTML="";
+  dizimista.innerHTML="";
+  const d = await db.collection("dizimistas").get();
+  d.forEach(doc=>{
+    dizimista.innerHTML+=`<option>${doc.data().nome}</option>`;
+  });
+
+  const c = await db.collection("contribuicoes").get();
+  c.forEach(doc=>{
+    const x=doc.data();
+    lista.innerHTML+=`<p><b>${x.nome}</b> - ${x.mes} - R$ ${x.valor}<br><small>${x.data}</small></p>`;
+  });
+}
+</script>
+
+</body>
+</html>
