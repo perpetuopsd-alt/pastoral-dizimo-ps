@@ -67,8 +67,20 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 function login(){
-  auth.signInWithEmailAndPassword(
-    email.value, password.value
+  const userEmail = email.value.trim();
+  const userPass = password.value.trim();
+
+  if(!userEmail || !userPass){
+    alert("Preencha e-mail e senha");
+    return;
+  }
+
+  auth.signInWithEmailAndPassword(userEmail, userPass)
+    .catch(error=>{
+      alert("Erro no login: " + error.message);
+    });
+}
+
   );
 }
 
